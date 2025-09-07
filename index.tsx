@@ -1,30 +1,22 @@
-// Fix: Use named imports for Three.js to resolve module errors.
-import {
-    Scene,
-    OrthographicCamera,
-    WebGLRenderer,
-    ShaderMaterial,
-    Clock,
-    Vector2,
-    PlaneGeometry,
-    TextureLoader,
-    RepeatWrapping,
-    Mesh
-} from 'three';
+// Fix: The previous named imports for Three.js were causing module resolution errors.
+// Switched to a namespace import (`import * as THREE from 'three'`) which is a more robust
+// way to import Three.js and resolves the "has no exported member" errors.
+// All Three.js types and classes have been prefixed with `THREE.` accordingly.
+import * as THREE from 'three';
 import { raymarcherFragmentShader } from './modules/shaders/raymarcher.ts';
 
 class App {
-    private scene: Scene;
-    private camera: OrthographicCamera;
-    private renderer: WebGLRenderer;
-    private material: ShaderMaterial;
-    private clock: Clock;
+    private scene: THREE.Scene;
+    private camera: THREE.OrthographicCamera;
+    private renderer: THREE.WebGLRenderer;
+    private material: THREE.ShaderMaterial;
+    private clock: THREE.Clock;
 
     // Interaction state
     private isDragging: boolean = false;
-    private dragStart: Vector2 = new Vector2();
-    private rotation: Vector2 = new Vector2(0.2, 0); // initial pitch, yaw
-    private targetRotation: Vector2 = new Vector2(0.2, 0);
+    private dragStart: THREE.Vector2 = new THREE.Vector2();
+    private rotation: THREE.Vector2 = new THREE.Vector2(0.2, 0); // initial pitch, yaw
+    private targetRotation: THREE.Vector2 = new THREE.Vector2(0.2, 0);
     private zoom: number = 15.0;
     private targetZoom: number = 15.0;
     private canvas: HTMLCanvasElement;
@@ -32,10 +24,10 @@ class App {
     constructor() {
         this.canvas = document.querySelector('#webgl-canvas') as HTMLCanvasElement;
         
-        this.scene = new Scene();
-        this.camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        this.renderer = new WebGLRenderer({ canvas: this.canvas });
-        this.clock = new Clock();
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+        this.clock = new THREE.Clock();
 
         this.init();
     }
@@ -44,18 +36,18 @@ class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
         
-        const planeGeometry = new PlaneGeometry(2, 2);
+        const planeGeometry = new THREE.PlaneGeometry(2, 2);
 
         // Load texture for the shader's iChannel0 (nebula background)
-        const textureLoader = new TextureLoader();
+        const textureLoader = new THREE.TextureLoader();
         const nebulaTexture = textureLoader.load('https://threejs.org/examples/textures/cube/MilkyWay/dark-s_px.jpg');
-        nebulaTexture.wrapS = RepeatWrapping;
-        nebulaTexture.wrapT = RepeatWrapping;
+        nebulaTexture.wrapS = THREE.RepeatWrapping;
+        nebulaTexture.wrapT = THREE.RepeatWrapping;
 
-        this.material = new ShaderMaterial({
+        this.material = new THREE.ShaderMaterial({
             uniforms: {
                 iTime: { value: 0.0 },
-                iResolution: { value: new Vector2(window.innerWidth, window.innerHeight) },
+                iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
                 iRotation: { value: this.rotation },
                 iZoom: { value: this.zoom },
                 iChannel0: { value: nebulaTexture },
@@ -68,7 +60,7 @@ class App {
             fragmentShader: raymarcherFragmentShader,
         });
 
-        const mesh = new Mesh(planeGeometry, this.material);
+        const mesh = new THREE.Mesh(planeGeometry, this.material);
         this.scene.add(mesh);
         
         // Bind event listeners
