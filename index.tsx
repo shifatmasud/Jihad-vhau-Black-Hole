@@ -1,5 +1,16 @@
-// Fix: Use named imports for Three.js to resolve module resolution errors.
-import { Scene, OrthographicCamera, WebGLRenderer, ShaderMaterial, Clock, Vector2, PlaneGeometry, TextureLoader, RepeatWrapping, Mesh } from 'three';
+// Fix: Use named imports for Three.js to resolve module errors.
+import {
+    Scene,
+    OrthographicCamera,
+    WebGLRenderer,
+    ShaderMaterial,
+    Clock,
+    Vector2,
+    PlaneGeometry,
+    TextureLoader,
+    RepeatWrapping,
+    Mesh
+} from 'three';
 import { raymarcherFragmentShader } from './modules/shaders/raymarcher.ts';
 
 class App {
@@ -112,7 +123,7 @@ class App {
 
     private onWheel(event: WheelEvent): void {
         event.preventDefault();
-        this.targetZoom += event.deltaY * 0.02;
+        this.targetZoom += event.deltaY * 0.05; // Increased from 0.02
         // Clamp zoom level
         this.targetZoom = Math.max(5.0, Math.min(50.0, this.targetZoom));
     }
@@ -120,7 +131,7 @@ class App {
     private animate(): void {
         requestAnimationFrame(this.animate.bind(this));
 
-        const easing = 0.08;
+        const easing = 0.3; // Increased from 0.08 for faster response
         // Ease current values towards targets for smooth animation
         this.rotation.x += (this.targetRotation.x - this.rotation.x) * easing;
         this.rotation.y += (this.targetRotation.y - this.rotation.y) * easing;

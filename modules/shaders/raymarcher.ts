@@ -1,3 +1,5 @@
+
+
 export const raymarcherFragmentShader = `
 uniform vec2 iResolution;
 uniform float iTime;
@@ -181,7 +183,8 @@ void main()
                 stepDist = min(stepDist, min(farLimit, closeLimit));
 				
                 float invDistSqr = invDist * invDist;
-                float bendForce = stepDist * invDistSqr * _Size * 0.625;  //bending force
+                // Increased bending force from 0.625 to 1.5 for a more dramatic lensing effect.
+                float bendForce = stepDist * invDistSqr * _Size * 1.5;  //bending force
                 ray =  normalize(ray - (bendForce * invDist )*pos);  //bend ray towards BH
                 pos += stepDist * ray; 
                 
@@ -198,8 +201,25 @@ void main()
 
             else if(dist2 > _Size * 1000.) //ray escaped BH
             {                   
-                vec4 bg = background (ray);
-                outCol = vec4(col.rgb*col.a + bg.rgb*(1.-col.a)  + glow.rgb *(1.-col.a    ), 1.);       
+                // -- Chromatic Aberration Effect --
+                // The effect is stronger closer to the black hole's influence.
+                // We calculate a distortion vector perpendicular to the ray and the direction to the black hole.
+                float aberrationStrength = 0.002 * clamp(1.0 / length(pos), 0.0, 1.0);
+                vec3 aberrationDir = normalize(cross(ray, pos));
+
+                // Create slightly offset rays for red and blue channels
+                vec3 ray_r = normalize(ray - aberrationDir * aberrationStrength);
+                vec3 ray_b = normalize(ray + aberrationDir * aberrationStrength);
+
+                // Sample each color channel from the background using its corresponding ray
+                float r = background(ray_r).r;
+                float g = background(ray).g; // Green channel uses the original ray
+                float b = background(ray_b).b;
+
+                // Combine the sampled channels into the final background color
+                vec3 bg = vec3(r, g, b);
+
+                outCol = vec4(col.rgb*col.a + bg*(1.-col.a)  + glow.rgb *(1.-col.a), 1.);       
                 break;
             }
 
